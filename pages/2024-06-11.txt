@@ -1,0 +1,25 @@
+# Welcome to my website!
+#### 2024-06-10
+
+This page was created written as a text file, and then formatted with `markdown-it`. This page will also serve to test the markdown capabities
+
+Below will be some markdown testing:
+
+Unordered lists
+* item1
+* item2
+* item3
+
+Ordered lists
+
+1. item4
+2. item5
+3. item6
+
+**This is bold text**
+__and this is bold text__
+
+*This is italic text*
+_and this is italic text_
+
+~~Strikethrough text~~

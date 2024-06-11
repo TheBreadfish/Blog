@@ -1,6 +1,8 @@
 const http = require('http');
 const fs = require('fs').promises;
+const path = require('path');
 const url = require('url');
+
 const markdown = require('markdown-it')();
 
 const port = 8080;
@@ -15,25 +17,7 @@ async function readFile(filePath) {
         return data.toString();
     } catch (error) {
         console.error(`Got an error trying to read the file: ${error.message}`);
-        return undefined;
-    }
-}
-
-function fileExists(filePath) {
-    try {
-        fs.accessSync(filePath, fs.constants.F_OK);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-async function createFile(filePath, fileContent) {
-    try {
-        await fs.writeFile(filePath, fileContent);
-        console.log('File created successfully:', filePath);
-    } catch (err) {
-        console.error('Error creating the file:', err);
+        return "404: File not found";
     }
 }
 
@@ -49,29 +33,21 @@ const server = http.createServer(async (req, res) => {
         console.log(currentDate);
 
         const file =
-            `Redirecting you to ./pages/${currentDate}.txt
+            `Redirecting you to /pages/${currentDate}.txt
 
             <script>
-                window.location.href = './pages/${currentDate}';
+                window.location.href = '/pages/${currentDate}';
             </script>`;
 
         res.end(file);
     } else if (req.method === "GET" && pathname.startsWith("/pages/")) {
         res.writeHead(200, { "Content-Type": "text/html"});
 
-        file = format(readFile(pathname.replace('/pages/', '/pages-source/')))
-        
-        res.end(file);
-    }
+        const filePath = path.join(__dirname, pathname.substring(0, pathname.length - 1), '.txt');
+        const markdownContent = await readFile(filePath);
+        const formattedContent = format(markdownContent);
 
-    // Helper function to check if a file exists
-    async function fileExists(path) {
-        try {
-            await fs.promises.access(path);
-            return true;
-        } catch {
-            return false;
-        }
+        res.end(formattedContent);
     }
 });
 
