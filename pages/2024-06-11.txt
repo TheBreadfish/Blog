@@ -36,14 +36,4 @@ Quote from M310N:
 | ext    | extension to be used for dest files. |
 
 
-[link](github.com)
-
-:-)
-
-:)
-
-:wink:
-
-:cry:
-
-:shrimp:
+[markdown-it Live Demo!](https://markdown-it.github.io/)

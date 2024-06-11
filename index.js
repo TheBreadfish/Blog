@@ -3,12 +3,13 @@ const fs = require('fs').promises;
 const path = require('path');
 const url = require('url');
 
-const markdown = require('markdown-it');
+const MarkdownIt = require('markdown-it');  // Correctly require markdown-it
+const markdown = new MarkdownIt();  // Create an instance of markdown-it
 
 const port = 8080;
 
 function format(markdownString) {
-    return markdown.render(markdownString.toString());
+    return markdown.render(markdownString);  // Use the instance's render method
 }
 
 async function readFile(filePath) {
