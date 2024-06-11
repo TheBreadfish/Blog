@@ -23,3 +23,27 @@ __and this is bold text__
 _and this is italic text_
 
 ~~Strikethrough text~~
+
+> I hope you have a wonderful day! :D
+
+Quote from M310N:
+> [11:34 PM] @leomelonseeds: too complicated, run /ban @a whenever tps is less than 15
+
+| Option | Description |
+| ------ | ----------- |
+| data   | path to data files to supply the data that will be passed into templates. |
+| engine | engine to be used for processing templates. Handlebars is the default. |
+| ext    | extension to be used for dest files. |
+
+
+[link](github.com)
+
+:-)
+
+:)
+
+:wink:
+
+:cry:
+
+:shrimp:

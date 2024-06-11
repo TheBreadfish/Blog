@@ -3,7 +3,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const url = require('url');
 
-const markdown = require('markdown-it')();
+const markdown = require('markdown-it');
 
 const port = 8080;
 
@@ -25,6 +25,8 @@ const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url);
     const pathname = parsedUrl.pathname;
 
+    console.log(req.method, pathname);
+
     if (req.method === "GET" && pathname === "/") {
         res.writeHead(200, { "Content-Type": "text/html" });
 
@@ -41,9 +43,9 @@ const server = http.createServer(async (req, res) => {
 
         res.end(file);
     } else if (req.method === "GET" && pathname.startsWith("/pages/")) {
-        res.writeHead(200, { "Content-Type": "text/html"});
+        res.writeHead(200, { "Content-Type": "text/html" });
 
-        const filePath = path.join(__dirname, pathname.substring(0, pathname.length - 1), '.txt');
+        const filePath = path.join(__dirname, 'pages', `${pathname.replace('/pages/', '')}.txt`);
         const markdownContent = await readFile(filePath);
         const formattedContent = format(markdownContent);
 
