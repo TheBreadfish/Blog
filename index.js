@@ -22,6 +22,28 @@ async function readFile(filePath) {
     }
 }
 
+async function getMostRecentFile(dir) {
+    try {
+        const files = await fs.readdir(dir);
+        const textFiles = files.filter(file => file.endsWith('.txt') && /^\d{4}-\d{2}-\d{2}\.txt$/.test(file));
+
+        if (textFiles.length === 0) {
+            throw new Error('No text files found');
+        }
+
+        // Extract dates from filenames and find the most recent one
+        const recentFile = textFiles.reduce((latest, file) => {
+            const currentDate = file.split('.txt')[0];
+            return (!latest || currentDate > latest) ? currentDate : latest;
+        }, null);
+
+        return recentFile
+    } catch (error) {
+        console.error(`Got an error trying to read the directory: ${error.message}`);
+        return null;
+    }
+}
+
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url);
     const pathname = parsedUrl.pathname;
@@ -29,20 +51,19 @@ const server = http.createServer(async (req, res) => {
     console.log(req.method, pathname);
 
     if (req.method === "GET" && pathname === "/") {
-        res.writeHead(200, { "Content-Type": "text/html" });
+        const pagesDir = path.join(__dirname, 'pages');
+        const recentFile = await getMostRecentFile(pagesDir);
 
-        let currentDate = new Date();
-        currentDate = currentDate.toISOString().split('T')[0];
-        console.log(currentDate);
-
-        const file =
-            `Redirecting you to /pages/${currentDate}.txt
-
-            <script>
-                window.location.href = '/pages/${currentDate}';
-            </script>`;
-
-        res.end(file);
+        if (recentFile) {
+            res.writeHead(200, { "Content-Type": "text/html" });
+            var fileContent = (await readFile(path.join(__dirname, 'pages/welcome.txt')))
+            fileContent = fileContent.replace('$$-INSERT_PAGE_LINK-$$', '/pages/' + recentFile).replace('$$-INSERT_PAGE_TITLE-$$', recentFile + '.txt')
+            formattedContent = format(fileContent)
+            res.end(formattedContent);
+        } else {
+            res.writeHead(404, { "Content-Type": "text/html" });
+            res.end("404: No recent file found");
+        }
     } else if (req.method === "GET" && pathname.startsWith("/pages/")) {
         res.writeHead(200, { "Content-Type": "text/html" });
 
@@ -51,6 +72,9 @@ const server = http.createServer(async (req, res) => {
         const formattedContent = format(markdownContent);
 
         res.end(formattedContent);
+    } else {
+        res.writeHead(404, { "Content-Type": "text/html" })
+        res.end("404: Page not found, are you an idiot? There is no page here.")
     }
 });
 
