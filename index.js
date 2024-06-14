@@ -44,11 +44,19 @@ async function getMostRecentFile(dir) {
     }
 }
 
+async function addHeader(formattedContent, pageName) {
+    var pageHeader = (await readFile(path.join(__dirname, '/pages/header.html'))).toString()
+    pageHeader = pageHeader.replace('$$-INSERT_PAGE_NAME-$$', pageName)
+
+    return pageHeader + '<div id="content">' + formattedContent + '</div>'
+}
+
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url);
     const pathname = parsedUrl.pathname;
 
     console.log(req.method, pathname);
+    
 
     if (req.method === "GET" && pathname === "/") {
         const pagesDir = path.join(__dirname, 'pages');
@@ -56,10 +64,12 @@ const server = http.createServer(async (req, res) => {
 
         if (recentFile) {
             res.writeHead(200, { "Content-Type": "text/html" });
+            
             var fileContent = (await readFile(path.join(__dirname, 'pages/welcome.txt')))
             fileContent = fileContent.replace('$$-INSERT_PAGE_LINK-$$', '/pages/' + recentFile).replace('$$-INSERT_PAGE_TITLE-$$', recentFile + '.txt')
             formattedContent = format(fileContent)
-            res.end(formattedContent);
+
+            res.end(await addHeader(formattedContent, 'Welcome! :D'));
         } else {
             res.writeHead(404, { "Content-Type": "text/html" });
             res.end("404: No recent file found");
@@ -71,7 +81,7 @@ const server = http.createServer(async (req, res) => {
         const markdownContent = await readFile(filePath);
         const formattedContent = format(markdownContent);
 
-        res.end(formattedContent);
+        res.end(await addHeader(formattedContent, pathname.replace('/pages/', 'Blog Post - ')));
     } else {
         res.writeHead(404, { "Content-Type": "text/html" })
         res.end("404: Page not found, are you an idiot? There is no page here.")
