@@ -4,7 +4,7 @@ const path = require('path');
 const url = require('url');
 
 const MarkdownIt = require('markdown-it');  // Correctly require markdown-it
-const markdown = new MarkdownIt();  // Create an instance of markdown-it
+const markdown = new MarkdownIt({ html: true });  // Create an instance of markdown-it
 
 const port = 8080;
 
@@ -91,6 +91,34 @@ async function addHeader(formattedContent, pageName) {
     `
 }
 
+const getContentType = (filePath) => {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+        '.html': 'text/html',
+        '.js': 'application/javascript',
+        '.css': 'text/css',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.ogg': 'video/ogg',
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.ico': 'image/vnd.microsoft.icon'
+    };
+
+    return mimeTypes[ext] || 'application/octet-stream';
+};
+
+
+/*
+SERVER CODE
+*/
+
+
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url);
     const pathname = parsedUrl.pathname;
@@ -111,7 +139,7 @@ const server = http.createServer(async (req, res) => {
             fileContent = fileContent.replace('$$-INSERT_PAGE_LINK-$$', '/pages/' + recentFile).replace('$$-INSERT_PAGE_TITLE-$$', recentFile + '.txt')
             formattedContent = format(fileContent).replace('$$-INSERT_PAGE_DIR-$$', pageListFormatted)
 
-            res.end(await addHeader(formattedContent, 'Welcome! :D'));
+            res.end(await addHeader(formattedContent, 'welcome.txt | Home | TBF'));
         } else {
             res.writeHead(404, { "Content-Type": "text/html" });
             res.end("404: No recent file found");
@@ -121,17 +149,30 @@ const server = http.createServer(async (req, res) => {
 
         if (!hiddenPages.includes(pathname.replace('/pages/', '') + '.txt')) {
             res.writeHead(200, { "Content-Type": "text/html" });
-            console.log(pathname.replace('/pages/', ''))
+            
             const filePath = path.join(__dirname, 'pages', `${pathname.replace('/pages/', '')}.txt`);
             const markdownContent = await readFile(filePath);
             const formattedContent = format(markdownContent);
 
-            res.end(await addHeader(formattedContent, pathname.replace('/pages/', 'Blog Post - ')));
+            res.end(await addHeader(formattedContent, `${pathname.replace('/pages/', '')}.txt | Blog | TBF`));
         }   else {
             res.writeHead(403, { "Content-Type": "text/html"})
             res.end('403: Page Hidden, why are you trying to find random files on here wtf? See the <a href="https://github.com/TheBreadfish/Blog">github</a> for the page smh.')
         }
         
+    } else if (req.method === "GET" && pathname.startsWith("/files/")) {
+        // BLOG IMAGES / FILES
+        const filePath = path.join(__dirname, pathname);
+        try {
+            const fileContent = await fs.readFile(filePath);
+            const contentType = getContentType(filePath);
+
+            res.writeHead(200, { "Content-Type": contentType });
+            res.end(fileContent);
+        } catch (error) {
+            res.writeHead(404, { "Content-Type": "text/html" });
+            res.end("404: File not found, 💀");
+        }
     } else {
         res.writeHead(404, { "Content-Type": "text/html" })
         res.end("404: Page not found, are you an idiot? There is no page here.")

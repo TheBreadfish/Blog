@@ -37,3 +37,6 @@ Quote from M310N:
 
 
 [markdown-it Live Demo!](https://markdown-it.github.io/)
+
+# Bricks:
+![Bricks](/files/bricks.jpg "bricks.jpg")
